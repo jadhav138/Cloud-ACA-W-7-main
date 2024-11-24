@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'IAM CloudFormation Template'
+
+Resources:   
+   # Creating an ELB Role
+  MyRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ElasticLoadBalancing.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/'
+      Tags:
+        - Key: 'Name'
+          Value: 'RoleForELB'
+
+  # Creating IAM Policy
+  MyIAMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'CustomPolicy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+         - Effect: 'Allow'
+           Action:
+             - 'elasticloadbalancing:DescribeLoadBalancers'
+             - 'elasticloadbalancing:DescribeTargetGroups'
+             - 'ec2:DescribeInstances'
+           Resource: '*'
+      Roles:
+        - !Ref MyRole

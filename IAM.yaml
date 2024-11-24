@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'IAM CloudFormation Template'
+
+Resources:
+  # Creating the group first
+  MyGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: 'WEEK7'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
+  # Creating the first user
+  MyIAMUser:
+    Type: 'AWS::IAM::User'
+    Properties:
+      UserName: 'cloudformationIAMW7'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
+  # Creating a second user
+  MySecondUser:
+    Type: 'AWS::IAM::User'
+    Properties:
+      UserName: 'secondUserW7'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/ReadOnlyAccess'
+
+  # Attaching the first user to the group
+  MyUserToGroupAddition:
+    Type: 'AWS::IAM::UserToGroupAddition'
+    DependsOn: MyGroup
+    Properties:
+      GroupName: 'WEEK7'
+      Users:
+        - 'cloudformationIAMW7'
+
+  # Attaching the second user to the group
+  MySecondUserToGroupAddition:
+    Type: 'AWS::IAM::UserToGroupAddition'
+    DependsOn: MyGroup
+    Properties:
+      GroupName: 'WEEK7'
+      Users:
+        - 'secondUserW7'
+
+  # Creating an IAM Role
+  MyRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ec2.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/PowerUserAccess'
+      Tags:
+        - Key: 'Name'
+          Value: 'RoleForELB'
+
+  # Creating IAM Policy
+  MyIAMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'CustomPolicy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+         - Effect: 'Allow'
+           Action:
+             - 's3:GetObject'
+           Resource: '*'
+      Roles:
+        - !Ref MyRole
+
+
+
+
+        # Creating an ELB Role
+  MyRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ElasticLoadBalancing.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/'
+      Tags:
+        - Key: 'Name'
+          Value: 'RoleForELB'
+
+  # Creating IAM Policy
+  MyIAMPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'CustomPolicy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+         - Effect: 'Allow'
+           Action:
+             - 'elasticloadbalancing:DescribeLoadBalancers'
+              - 'elasticloadbalancing:DescribeTargetGroups'
+              - 'ec2:DescribeInstances'
+           Resource: '*'
+      Roles:
+        - !Ref MyRole
